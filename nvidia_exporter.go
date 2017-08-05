@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"sync"
+	"strconv"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -26,35 +27,35 @@ var (
 	gaugeMetrics = map[string]*VecInfo{
 		"power_watts": &VecInfo{
 			help:   "Power Usage of an NVIDIA GPU in Watts",
-			labels: []string{"device_uuid", "device_name"},
+			labels: []string{"device_id", "device_uuid", "device_name"},
 		},
 		"gpu_percent": &VecInfo{
 			help:   "Percent of GPU Utilized",
-			labels: []string{"device_uuid", "device_name"},
+			labels: []string{"device_id", "device_uuid", "device_name"},
 		},
 		"memory_free": &VecInfo{
 			help:   "Number of bytes free in the GPU Memory",
-			labels: []string{"device_uuid", "device_name"},
+			labels: []string{"device_id", "device_uuid", "device_name"},
 		},
 		"memory_total": &VecInfo{
 			help:   "Total bytes of the GPU's memory",
-			labels: []string{"device_uuid", "device_name"},
+			labels: []string{"device_id", "device_uuid", "device_name"},
 		},
 		"memory_used": &VecInfo{
 			help:   "Total number of bytes used in the GPU Memory",
-			labels: []string{"device_uuid", "device_name"},
+			labels: []string{"device_id", "device_uuid", "device_name"},
 		},
 		"memory_percent": &VecInfo{
 			help:   "Percent of GPU Memory Utilized",
-			labels: []string{"device_uuid", "device_name"},
+			labels: []string{"device_id", "device_uuid", "device_name"},
 		},
 		"temperature_fahrenheit": &VecInfo{
 			help:   "GPU Temperature in Fahrenheit",
-			labels: []string{"device_uuid", "device_name"},
+			labels: []string{"device_id", "device_uuid", "device_name"},
 		},
 		"temperature_celsius": &VecInfo{
 			help:   "GPU Temperature in Celsius",
-			labels: []string{"device_uuid", "device_name"},
+			labels: []string{"device_id", "device_uuid", "device_name"},
 		},
 	}
 )
@@ -120,32 +121,32 @@ func (e *Exporter) GetTelemetryFromNVML() {
 			e.up.Set(0)
 			return
 		}
-		e.gauges["gpu_percent"].WithLabelValues(device.DeviceUUID, device.DeviceName).Set(float64(gpuPercent))
-		e.gauges["memory_percent"].WithLabelValues(device.DeviceUUID, device.DeviceName).Set(float64(memoryPercent))
+		e.gauges["gpu_percent"].WithLabelValues(strconv.Itoa(device.i), device.DeviceUUID, device.DeviceName).Set(float64(gpuPercent))
+		e.gauges["memory_percent"].WithLabelValues(strconv.Itoa(device.i), device.DeviceUUID, device.DeviceName).Set(float64(memoryPercent))
 
 		if tempF, tempC, err = device.GetTemperature(); err != nil {
 			fmt.Printf("Failed to get Device Temperature for %s: %s\n", device.DeviceUUID, err.Error())
 			e.up.Set(0)
 			return
 		}
-		e.gauges["temperature_celsius"].WithLabelValues(device.DeviceUUID, device.DeviceName).Set(float64(tempC))
-		e.gauges["temperature_fahrenheit"].WithLabelValues(device.DeviceUUID, device.DeviceName).Set(float64(tempF))
+		e.gauges["temperature_celsius"].WithLabelValues(strconv.Itoa(device.i), device.DeviceUUID, device.DeviceName).Set(float64(tempC))
+		e.gauges["temperature_fahrenheit"].WithLabelValues(strconv.Itoa(device.i), device.DeviceUUID, device.DeviceName).Set(float64(tempF))
 
 		if powerUsage, err = device.GetPowerUsage(); err != nil {
 			fmt.Printf("Failed to get Device Power Usage for %s: %s\n", device.DeviceUUID, err.Error())
 			e.up.Set(0)
 			return
 		}
-		e.gauges["power_watts"].WithLabelValues(device.DeviceUUID, device.DeviceName).Set(float64(powerUsage))
+		e.gauges["power_watts"].WithLabelValues(strconv.Itoa(device.i), device.DeviceUUID, device.DeviceName).Set(float64(powerUsage))
 
 		if gpuMem, err = device.GetMemoryInfo(); err != nil {
 			fmt.Printf("Failed to get Memory Info for %s: %s\n", device.DeviceUUID, err.Error())
 			e.up.Set(0)
 			return
 		}
-		e.gauges["memory_free"].WithLabelValues(device.DeviceUUID, device.DeviceName).Set(float64(gpuMem.Free))
-		e.gauges["memory_total"].WithLabelValues(device.DeviceUUID, device.DeviceName).Set(float64(gpuMem.Total))
-		e.gauges["memory_used"].WithLabelValues(device.DeviceUUID, device.DeviceName).Set(float64(gpuMem.Used))
+		e.gauges["memory_free"].WithLabelValues(strconv.Itoa(device.i), device.DeviceUUID, device.DeviceName).Set(float64(gpuMem.Free))
+		e.gauges["memory_total"].WithLabelValues(strconv.Itoa(device.i), device.DeviceUUID, device.DeviceName).Set(float64(gpuMem.Total))
+		e.gauges["memory_used"].WithLabelValues(strconv.Itoa(device.i), device.DeviceUUID, device.DeviceName).Set(float64(gpuMem.Used))
 	}
 }
 
